@@ -21,6 +21,7 @@ env/
 user_generated_images/
 user_clothes/
 user_images/
+profile_images/
 
 
 db.sqlite3/
