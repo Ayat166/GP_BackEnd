@@ -5,6 +5,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from .models import User
 import jwt
 import datetime
+from rest_framework import status
+
 # Create your views here.
 
 class RegisterView(APIView):
@@ -12,7 +14,7 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=requset.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         
 class LoginView(APIView):
@@ -41,6 +43,7 @@ class LoginView(APIView):
         respone.data = {
             'jwt':token
         }
+        respone.status_code = status.HTTP_200_OK
         return respone
     
 class UserView(APIView):
@@ -55,7 +58,26 @@ class UserView(APIView):
         user = User.objects.filter(id=payload['id']).first()
         serializer = UserSerializer(user)
        
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')
+        
+        user = User.objects.filter(id=payload['id']).first()
+        serializer = UserSerializer(user, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LogoutView(APIView):
     def post(self,request):
@@ -64,5 +86,6 @@ class LogoutView(APIView):
         response.data = {
             'message' : 'success'
         }
+        response.status_code = status.HTTP_200_OK
         return response
 
