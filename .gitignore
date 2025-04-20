@@ -17,11 +17,10 @@
 venv/
 env/
 
-
-user_generated_images/
-user_clothes/
-user_images/
-
-
-db.sqlite3/
-
+# Django
+*.log
+db.sqlite3
+media/
+models/
+__pycache__/
+migrations/

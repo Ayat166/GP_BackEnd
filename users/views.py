@@ -5,29 +5,36 @@ from rest_framework.exceptions import AuthenticationFailed
 from .models import User
 import jwt
 import datetime
+from rest_framework import status
+
 # Create your views here.
 
 class RegisterView(APIView):
-    def post(self, requset):
-        serializer = UserSerializer(data=requset.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def post(self, request):
+        serializer = UserSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         
+        return Response({'message': 'Validation errors', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
 class LoginView(APIView):
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
         
+        if not email or not password:
+            return Response({'message': 'Email and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
         user = User.objects.filter(email=email).first()
         
         if user is None:
-            raise AuthenticationFailed('User Not Found')
+            return Response({'message': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
         
         
         if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect Password')
+            return Response({'message': 'Incorrect password!'}, status=status.HTTP_401_UNAUTHORIZED)
+        
         
         payload = {
             'id' : user.id,
@@ -41,28 +48,57 @@ class LoginView(APIView):
         respone.data = {
             'jwt':token
         }
+        respone.status_code = status.HTTP_200_OK
         return respone
     
 class UserView(APIView):
-    def get(self,request):
-        token = request.COOKIES.get('jwt')
+    def get(self, request, token):
         if not token:
-            raise AuthenticationFailed('Unauthenticated!')
+            return Response({'message': 'Unauthenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            payload = jwt.decode(token,'secret',algorithms=['HS256'])
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
+            return Response({'message': 'Unauthenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
         user = User.objects.filter(id=payload['id']).first()
-        serializer = UserSerializer(user)
-       
-        return Response(serializer.data)
+        serializer = UserSerializer(user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
+    def put(self, request, token):
+        if not token:
+            return Response({'message': 'Unauthenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Unauthenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            return Response({'message': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UserSerializer(user, data=request.data, context={'request': request})
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({'message': 'Validation errors', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+      
 class LogoutView(APIView):
-    def post(self,request):
+    def post(self, request, token):
+        try:
+            # Decode the token to ensure it's valid before attempting to delete it
+            jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response({'message': 'Unauthenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.InvalidTokenError:
+            return Response({'message': 'Invalid token!'}, status=status.HTTP_401_UNAUTHORIZED)
+        
         response = Response()
+        # Optionally, clear the token cookie if it exists
         response.delete_cookie('jwt')
         response.data = {
-            'message' : 'success'
+            'message': 'Successfully logged out'
         }
+        response.status_code = status.HTTP_200_OK
         return response
-

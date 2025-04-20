@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r#np*-4+*!ort&io=^)may$p2@0+g2gke1=lbb-ylwhs=!u!$w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'cloths',
+    'generated',
+
 ]
 
 MIDDLEWARE = [
@@ -138,3 +140,9 @@ CORS_ALLOW_CREDENTIALS = True
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
