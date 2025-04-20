@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs ={
             'password' : {'write_only':True}
         }
+<<<<<<< HEAD
     def get_profileImage_url(self, obj):
         request = self.context.get('request')
         if obj.profileImage and request:
@@ -18,6 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
             return url
         return None
     
+=======
+>>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
     def create(self, validated_data):
         password = validated_data.pop('password',None)
         instance = self.Meta.model(**validated_data)
