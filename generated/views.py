@@ -1,41 +1,26 @@
-<<<<<<< HEAD
 import json
 import numpy as np
-=======
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from cloths.models import UserClothes
 from generated.models import UserGeneratedImage
-<<<<<<< HEAD
 from generated.serializers import UserGeneratedImageSerializer ,UserGeneratedImageSerializerRetrive
-=======
-from generated.serializers import UserGeneratedImageSerializer
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
 from users.models import User
 from cloths.serializers import UserImageSerializer , UserClothesImageSerializer
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
-<<<<<<< HEAD
 from models.cloth_mask import segment_cloth
-=======
-from .cloth_mask import segment_cloth
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
 import cv2
 import os
 # Create your views here.
 from django.core.files.base import ContentFile
-<<<<<<< HEAD
 from models.graphonomy_master.exp.inference.inference import inference
 from models.VITON_HD.test import test
 from PIL import Image, ImageDraw
 from io import BytesIO
 from models.openpose import create_densepose_image
 from gradio_client import Client, file # type: ignore
-=======
-
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
 
 class UserGeneratedView(APIView):
     # if the user upload 2 images to generate the image
@@ -60,7 +45,6 @@ class UserGeneratedView(APIView):
             user_image_instance = serializerImage.save(user=user)
             user_clothes_instance = serializerClothes.save(user=user)
             
-<<<<<<< HEAD
             # Generate cloth image mask
             input_image_path = user_clothes_instance.image.path
             print(input_image_path)
@@ -102,42 +86,16 @@ class UserGeneratedView(APIView):
             res.save(buffer, format="JPEG")
             image_bytes = buffer.getvalue()
             generated_image_file = ContentFile(image_bytes, name='generated_image.jpg')
-=======
-            # generate cloth image mask
-            input_image_path = user_clothes_instance.image
-            input_image = cv2.imread(str(input_image_path))
-            result = segment_cloth(input_image)
-            cloth_mask_image = result["cloth_mask_image"]
-            output_folder = "clothMask"
-            os.makedirs(output_folder, exist_ok=True)
-            cloth_image_path = os.path.join(output_folder, "cloth_mask.jpg")
-            cv2.imwrite(cloth_image_path, cloth_mask_image)
-            #error here
-            generated_image = cv2.imread(cloth_image_path)
-            # Convert the numpy array to a byte string
-            generated_image_bytes = cv2.imencode('.jpg', generated_image)[1].tobytes()
-
-            # Create a ContentFile from the byte string and specify a filename
-            generated_image_file = ContentFile(generated_image_bytes, name='generated_image.jpg')
-
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
             serializer_generated_image = UserGeneratedImageSerializer(data={
                 'user': user.id,
                 'user_image': user_image_instance.id,
                 'user_clothes': user_clothes_instance.id,
                 'generated_image': generated_image_file
-<<<<<<< HEAD
             }, context={'request': request})
 
             if serializer_generated_image.is_valid():
                 user_generated_image_instance = serializer_generated_image.save()
                 return Response(serializer_generated_image.data, status=status.HTTP_200_OK)
-=======
-            })
-            if serializer_generated_image.is_valid():
-                user_generated_image_instance = serializer_generated_image.save()
-                return Response(serializer_generated_image.data, status=status.HTTP_201_CREATED)
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
             else:
                 return Response(serializer_generated_image.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -159,11 +117,7 @@ class UserGeneratedView(APIView):
             if user == user_image.user:
                 user_image.is_fav=True
                 user_image.save()
-<<<<<<< HEAD
                 return Response({'message': 'User image added to Fav Successfully'}, status=status.HTTP_200_OK)
-=======
-                return Response({'message': 'User image added to Fav Successfully'}, status=status.HTTP_204_NO_CONTENT)
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
             else:
                 return Response({'message': 'Unauthorized!'}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -183,17 +137,12 @@ class UserGeneratedView(APIView):
         if user_image:
             if user == user_image.user:
                 user_image.delete()
-<<<<<<< HEAD
                 return Response({'message': 'User image deleted successfully'}, status=status.HTTP_200_OK)
-=======
-                return Response({'message': 'User image deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
             else:
                 return Response({'message': 'Unauthorized!'}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({'message': 'User does not have the specified image'}, status=status.HTTP_404_NOT_FOUND)
         
-<<<<<<< HEAD
         
     def get(self, request):
         token = request.COOKIES.get('jwt')
@@ -208,8 +157,6 @@ class UserGeneratedView(APIView):
         serializer = UserGeneratedImageSerializerRetrive(user_images, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
         
-=======
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
     
     
 class UserGeneratedWithClothView(APIView):
@@ -231,7 +178,6 @@ class UserGeneratedWithClothView(APIView):
                 raise AuthenticationFailed('Unauthenticated!')
             user = User.objects.filter(id=payload['id']).first()
             user_image_instance = serializerImage.save(user=user)
-<<<<<<< HEAD
             cloth_image_instance = UserClothes.objects.filter(id=clothimageid).first()
             if cloth_image_instance:
                 if cloth_image_instance.user == user :
@@ -278,37 +224,6 @@ class UserGeneratedWithClothView(APIView):
                     if serializer_generated_image.is_valid():
                         user_generated_image_instance = serializer_generated_image.save()
                         return Response(serializer_generated_image.data, status=status.HTTP_200_OK)
-=======
-            user_clothes_instance = UserClothes.objects.filter(id=clothimageid).first()
-            if user_clothes_instance:
-                if user_clothes_instance.user == user :
-                    # generate cloth image mask
-                    input_image_path = user_clothes_instance.image
-                    input_image = cv2.imread(str(input_image_path))
-                    result = segment_cloth(input_image)
-                    cloth_mask_image = result["cloth_mask_image"]
-                    output_folder = "clothMask"
-                    os.makedirs(output_folder, exist_ok=True)
-                    cloth_image_path = os.path.join(output_folder, "cloth_mask.jpg")
-                    cv2.imwrite(cloth_image_path, cloth_mask_image)
-                    #error here
-                    generated_image = cv2.imread(cloth_image_path)
-                    # Convert the numpy array to a byte string
-                    generated_image_bytes = cv2.imencode('.jpg', generated_image)[1].tobytes()
-
-                    # Create a ContentFile from the byte string and specify a filename
-                    generated_image_file = ContentFile(generated_image_bytes, name='generated_image.jpg')
-
-                    serializer_generated_image = UserGeneratedImageSerializer(data={
-                        'user': user.id,
-                        'user_image': user_image_instance.id,
-                        'user_clothes': user_clothes_instance.id,
-                        'generated_image': generated_image_file
-                    })
-                    if serializer_generated_image.is_valid():
-                        user_generated_image_instance = serializer_generated_image.save()
-                        return Response(serializer_generated_image.data, status=status.HTTP_201_CREATED)
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
                     else:
                         return Response(serializer_generated_image.errors, status=status.HTTP_400_BAD_REQUEST)
                 else:
@@ -316,7 +231,6 @@ class UserGeneratedWithClothView(APIView):
             else:
                 return Response({'message': 'User does not have the specified image'}, status=status.HTTP_404_NOT_FOUND)
         else:
-<<<<<<< HEAD
             return Response(serializerImage.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
@@ -400,6 +314,3 @@ class UserGeneratedIDMView(APIView):
                 return Response(serializer_generated_image.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response([serializerImage.errors, serializerClothes.errors], status=status.HTTP_400_BAD_REQUEST)
-=======
-            return Response(serializerImage.errors, status=status.HTTP_400_BAD_REQUEST)
->>>>>>> 60cf6dff7d8a295d8f4a0496c08a754cf45b59f6
