@@ -1,6 +1,9 @@
 # VProva – Virtual Try-On Mobile Application
 
 VProva is an innovative mobile application that allows users to virtually try on clothes using 2D images. By leveraging advanced generative AI models, VProva enhances the online shopping experience, enabling users to visualize how garments would look on them without the need for physical trials.
+
+https://github.com/user-attachments/assets/711e8e13-0175-426f-9995-d776e3d81ad1
+
 ---
 
 For more details, refer to the [project presentation](https://www.canva.com/design/DAF8m-fqUHM/cQiaBQuOSXSaX_qtPUi73g/edit?utm_content=DAF8m-fqUHM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton).
